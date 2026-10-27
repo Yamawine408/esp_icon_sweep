@@ -114,10 +114,10 @@ Change icon color at `every` position.
     effects:
       - type: color
         every: 10
-	colors:
-	  - color: 0xFF0000
-	  - color: 0x00FF00
-	  - color: 0x0000FF
+        colors:
+          - color: 0xFF0000
+          - color: 0x00FF00
+          - color: 0x0000FF
 ```
 
 ### `icon`
@@ -128,9 +128,9 @@ Alternate icons.
     effects:
       - type: icon
         every: 10
-	icons:
-	  - image: icon1
-	  - image: icon2
+        icons:
+          - image: icon1
+          - image: icon2
 ```
 
 ### `jump`
@@ -144,7 +144,7 @@ Jump icon 2 times at `every` position with the jump height of 5 pixels.
         transition: 200ms
         height: 5
         bounces: 2
-	playback: true
+        playback: true
 ```
 
 ### `rotation`
