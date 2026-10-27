@@ -62,8 +62,8 @@ requiring the trail to reproduce every movement of the icon.
     
     start_x: 40
     animation_width: 800
-    blink_count: 4
     home_opacity: 40
+    blink_count: 4
     blink_transition: 300ms
     fade_out_transition: 1s
     
@@ -84,25 +84,30 @@ In this example, the icon jumps when it reaches the positions
 specified by the `every` number which is the percentage of the `animation_width`.
 The animation settings are intended to let you customize properties such as:
 
-- `start_x` — horizontal starting position.
-- `home_opacity` - opacity of icon at home position without animation
-- `animation_width` - width wher the animation takes place
-- `blink_count` - the number of blinks when starting animation
-- `blink_transition` - time to blink at start
-- `fade_out_transition` - the time to fade-out when stopping animation
-- `trasision` - the time for one animation  loop (from the start to the end)
-- `train_length` - length of trail
-- `trail_width` - width of trail
-- `width` — icon width.
-- `effect` - you may have an animation effect while moving icon. See below.
+- `widget` - LVGL widget ID to animate
+- `start_x` —Horizontal starting position of the animation
+- `animation_width` - Rightmost X-coordinate reached by the icon's left edge
+- `home_opacity` - Icon opacity at the home position, as a percentage (0–100)
+- `blink_count` - Number of blinks at the home position before the icon starts moving
+- `blink_transition` - Duration of one blink cycle
+- `fade_out_transition` - Duration of the fade-out animation when stopping.
+- `transision` - Duration of one complete sweep animation
+- `trail_length` - Length of the trail behind the icon (pixels)
+- `trail_width` - (Vertical) Width of trail (pixels)
+- `effects` - List of animation effects to apply while the icon moves
+
+![ESP Icon Sweep animation](dcos/esp_icon_sweep.png)
 
 ## Effects
+
+Multiple effects can be combined, but only one `icon` effect and one
+`color` effect are allowed. 
 
 ### Common parameters
 
 | Name | Type | Default | Description |
 | ---- | :--: | :-----: | ----------- |
-| `type` | string | (none) | animation type (`color`\|`icon`\|`jump`\|`rotate`\|`scale`) |
+| `type` | string | (none) | effect type (`color`\|`icon`\|`jump`\|`rotate`\|`scale`) |
 | `every` | integer | (none) | every position in percentage of `animation_width` to start animation |
 | `playback` | boolean | (none) | if `true`, then the animation takes place only once |
 
@@ -150,7 +155,7 @@ Jump icon 2 times at `every` position with the jump height of 5 pixels.
 ### `rotation`
 
 Rotating the icon without stopping the rotation. Its rotation speed is
-1 round per second.
+1 round per second in this example.
 
 ```yaml
     effects:
@@ -158,11 +163,15 @@ Rotating the icon without stopping the rotation. Its rotation speed is
         every: 0
         transition: 1s
         playback: true
-```
+        from: 0
+        to: 360
+    ```
 
 ### `scale`
 
-Icon scales from 90\% to 180\% of its original size at the `every` position.
+In this example, the icon scales from 100% to 120% of its original
+size when it reaches 10% of the animation path. The scaling animation
+then returns to its original size because playback is set to true. 
 
 ```yaml
     effects:
@@ -176,9 +185,12 @@ Icon scales from 90\% to 180\% of its original size at the `every` position.
 
 ## License
 
-This project is distributed under the license included in the repository. See [LICENSE](LICENSE) for details.
+This project is distributed under the license included in the
+repository. See [LICENSE](LICENSE) for details. 
 
 ## Contributing
 
-Issues, suggestions, and improvements are welcome. Please include your ESPHome version, LVGL version, display configuration, and relevant logs when reporting problems.
+Issues, suggestions, and improvements are welcome. Please include your
+ESPHome version, LVGL version, display configuration, and relevant
+logs when reporting problems. 
 
