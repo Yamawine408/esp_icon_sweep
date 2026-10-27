@@ -166,7 +166,7 @@ Rotating the icon without stopping the rotation. Its rotation speed is
         playback: true
         from: 0
         to: 360
-    ```
+```
 
 ### `scale`
 
