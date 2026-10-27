@@ -375,7 +375,7 @@ void EspIconSweep::start_fade_out_() {
     lv_anim_set_var(&icon_anim, this);
     lv_anim_set_exec_cb(&icon_anim, &EspIconSweep::set_icon_opa_cb);
     const lv_opa_t home_opa = static_cast<lv_opa_t>((255U * home_opacity_) / 100U);
-    lv_anim_set_values(&icon_anim, lv_obj_get_style_opa(widget_, LV_PART_MAIN), home_opa);
+    lv_anim_set_values(&icon_anim, lv_obj_get_style_opa(widget_, LV_PART_MAIN), LV_OPA_TRANSP); //home_opa);
     lv_anim_set_time(&icon_anim, fade_out_transition_ms_ > 0 ? fade_out_transition_ms_ : 1);
     lv_anim_set_ready_cb(&icon_anim, &EspIconSweep::fade_out_ready_cb);
     lv_anim_start(&icon_anim);

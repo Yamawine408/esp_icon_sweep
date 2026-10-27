@@ -43,33 +43,74 @@ external_components:
 
 ESP Icon Sweep is configured through ESPHome YAML.
 
-The animation settings are intended to let you customize properties such as:
-
-- `start_x` — horizontal starting position.
-- `width` — icon width.
-- `duration` — animation duration.
-- `blink` — blinking effect.
-- `scale` — icon scaling effect.
-- `jump` — vertical jumping effect.
-- `rotation` — icon rotation.
-
-The exact option names, supported values, and defaults depend on the component's current implementation. Refer to the component configuration schema and example YAML for the definitive list.
-
 ## How It Works
 
 ESP Icon Sweep separates the moving icon from its trail effects.
 
-The icon can move and apply optional transformations while the trail remains independent. For example, an icon can jump vertically while its trail continues along a horizontal path.
+The icon can move and apply optional transformations while the trail
+remains independent. For example, an icon can jump vertically while
+its trail continues along a horizontal path.  
 
-This separation allows animation effects to be combined without requiring the trail to reproduce every movement of the icon.
+This separation allows animation effects to be combined without
+requiring the trail to reproduce every movement of the icon. 
 
-## Example Use Cases
+## Example
 
-- Animated energy or power icons
-- CO₂ and air-quality indicators
-- Door-lock status animations
-- Toilet or bathroom activity indicators
-- Decorative animations for smart-home dashboards
+```yaml
+  - id: icon_sweep_animation
+    widget: icon_sweep_widget
+    
+    start_x: 40
+    animation_width: 800
+    blink_count: 4
+    home_opacity: 40
+    blink_transition: 300ms
+    fade_out_transition: 1s
+    
+    transition: 30s
+    trail_length: 150
+    trail_width: 2
+    trail_color: 0xFFFFFF
+    effects:
+      - type: scale
+        every: 10
+        transition: 100ms
+        from: 100 
+        to: 120
+        playback: true
+```
+
+The animation settings are intended to let you customize properties such as:
+
+- `start_x` — horizontal starting position.
+- `home_opacity` - opacity of icon at home position without animation
+- `animation_width` - width wher the animation takes place
+- `blink_count` - the number of blinks when starting animation
+- `blink_transition` - time to blink at start
+- `fade_out_transition` - the time to fade-out when stopping animation
+- `trasision` - the time for one animation  loop (from the start to the end)
+- `train_length` - length of trail
+- `trail_width` - width of trail
+- `width` — icon width.
+- `effect` - you may have an animation effect while moving icon
+
+## Effects
+
+### `blink`
+
+Blinking effect.
+
+### `scale`
+
+Icon scaling effect.
+
+### `jump`
+
+Vertical jumping effect.
+
+### `rotation`
+
+Icon rotation.
 
 ## License
 
