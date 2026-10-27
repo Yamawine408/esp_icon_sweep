@@ -107,9 +107,10 @@ Multiple effects can be combined, but only one `icon` effect and one
 
 | Name | Type | Default | Description |
 | ---- | :--: | :-----: | ----------- |
-| `type` | string | (none) | effect type (`color`\|`icon`\|`jump`\|`rotate`\|`scale`) |
-| `every` | integer | (none) | every position in percentage of `animation_width` to start animation |
-| `playback` | boolean | (none) | if `true`, then the animation takes place only once |
+| `type` | string | (none) | Effect type (`color`\|`icon`\|`jump`\|`rotate`\|`scale`) |
+| `transition` | Duration of the effect animation. |
+| `every` | integer | (none) | Position along the animation path, expressed as a percentage (0–100). Use 0 for continuous rotation or continuous icon cycling. |
+| `playback` | boolean | (none) | Whether the effect reverses after reaching its target value. |
 
 ### `color`
 
