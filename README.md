@@ -80,6 +80,8 @@ requiring the trail to reproduce every movement of the icon.
         playback: true
 ```
 
+In this example, the icon jumps when it reaches the positions
+specified by the `every` number which is the percentage of the `animation_width`.
 The animation settings are intended to let you customize properties such as:
 
 - `start_x` — horizontal starting position.
@@ -92,25 +94,47 @@ The animation settings are intended to let you customize properties such as:
 - `train_length` - length of trail
 - `trail_width` - width of trail
 - `width` — icon width.
-- `effect` - you may have an animation effect while moving icon
+- `effect` - you may have an animation effect while moving icon. See below.
 
 ## Effects
+
+### Common parameters
+
 
 ### `blink`
 
 Blinking effect.
 
+| Name | Type | Default | Description |
+| ---- | :--: | :-----: | ----------- |
+| `type` | string | (none) | animation type (`icon`|`jump`|`rotate`|`scale`) |
+| `every` | integer | (none) | position(s) to have the specified animation |
+| `playback` | boolean | (none) | if `true`, then the animation takes place onle once |
+
+### `icon`
+
+Change icon.
+
 ### `scale`
 
-Icon scaling effect.
+Scale icons.
+
+### `blink`
+
+Blinking icon.
+
+| Name | Type | Default | Description |
+| ---- | :--: | :-----: | ----------- |
+| `blink_transition` | string | 300ms | time duration for a jump |
+| `
 
 ### `jump`
 
-Vertical jumping effect.
+Jump icon.
 
 ### `rotation`
 
-Icon rotation.
+Rotate icon.
 
 ## License
 
