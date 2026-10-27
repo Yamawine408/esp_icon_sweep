@@ -96,7 +96,7 @@ The animation settings are intended to let you customize properties such as:
 - `trail_width` - (Vertical) Width of trail (pixels)
 - `effects` - List of animation effects to apply while the icon moves
 
-![ESP Icon Sweep animation](dcos/esp_icon_sweep.png)
+![ESP Icon Sweep animation](dcos/esp-icon-sweep.png)
 
 ## Effects
 
