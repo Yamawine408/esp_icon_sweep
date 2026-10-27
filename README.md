@@ -107,7 +107,7 @@ Blinking effect.
 
 | Name | Type | Default | Description |
 | ---- | :--: | :-----: | ----------- |
-| `type` | string | (none) | animation type (`icon`|`jump`|`rotate`|`scale`) |
+| `type` | string | (none) | animation type (`icon`\|`jump`\|`rotate`\|`scale`) |
 | `every` | integer | (none) | position(s) to have the specified animation |
 | `playback` | boolean | (none) | if `true`, then the animation takes place onle once |
 
