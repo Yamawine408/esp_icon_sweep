@@ -100,41 +100,79 @@ The animation settings are intended to let you customize properties such as:
 
 ### Common parameters
 
-
-### `blink`
-
-Blinking effect.
-
 | Name | Type | Default | Description |
 | ---- | :--: | :-----: | ----------- |
-| `type` | string | (none) | animation type (`icon`\|`jump`\|`rotate`\|`scale`) |
-| `every` | integer | (none) | position(s) to have the specified animation |
-| `playback` | boolean | (none) | if `true`, then the animation takes place onle once |
+| `type` | string | (none) | animation type (`color`\|`icon`\|`jump`\|`rotate`\|`scale`) |
+| `every` | integer | (none) | every position in percentage of `animation_width` to start animation |
+| `playback` | boolean | (none) | if `true`, then the animation takes place only once |
+
+### `color`
+
+Change icon color at `every` position.
+
+```yaml
+    effects:
+      - type: color
+        every: 10
+	colors:
+	  - color: 0xFF0000
+	  - color: 0x00FF00
+	  - color: 0x0000FF
+```
 
 ### `icon`
 
-Change icon.
+Alternate icons.
 
-### `scale`
-
-Scale icons.
-
-### `blink`
-
-Blinking icon.
-
-| Name | Type | Default | Description |
-| ---- | :--: | :-----: | ----------- |
-| `blink_transition` | string | 300ms | time duration for a jump |
-| `
+```yaml
+    effects:
+      - type: icon
+        every: 10
+	icons:
+	  - image: icon1
+	  - image: icon2
+```
 
 ### `jump`
 
-Jump icon.
+Jump icon 2 times at `every` position with the jump height of 5 pixels.
+
+```yaml
+    effects:
+      - type: jump
+        every: 10
+        transition: 200ms
+        height: 5
+        bounces: 2
+	playback: true
+```
 
 ### `rotation`
 
-Rotate icon.
+Rotating the icon without stopping the rotation. Its rotation speed is
+1 round per second.
+
+```yaml
+    effects:
+      - type: rotate
+        every: 0
+        transition: 1s
+        playback: true
+```
+
+### `scale`
+
+Icon scales from 90\% to 180\% of its original size at the `every` position.
+
+```yaml
+    effects:
+      - type: scale
+        every: 10
+        transition: 3s
+        from: 90
+        to: 180
+        playback: true
+```
 
 ## License
 
