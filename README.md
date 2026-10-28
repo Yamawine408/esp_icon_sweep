@@ -216,6 +216,28 @@ Multiple effects may be combined, but some combinations will not behave
 as expected. In particular, effects that modify the same property may
 interfere with each other. Use such combinations with care.
 
+## How to Start/Stop Animation
+
+Here is the sample YAML code to start and stop animatiom.
+
+```yaml
+platform: homeassistant
+id: boolean_sensor
+entity_id: input_boolean.boolean_sensor
+internal: true
+trigger_on_initial_state: true
+
+on_state:
+  then:
+    - if:
+        condition:
+          binary_sensor.is_on: boolean_sensor
+        then:
+          - lambda: id(widget_id).start();
+        else:
+          - lambda: id(widget_id).stop();
+```
+
 ## License
 
 This project is distributed under the license included in the
