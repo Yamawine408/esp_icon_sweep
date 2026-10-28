@@ -181,11 +181,13 @@ desired resting position rather than crossing the 0°/360° boundary.
 
 For example, to gently wobble an icon by 10° in either direction:
 
+```yaml
 - type: rotate
   animation: 1s
   from: -5
   to: 5
   alternate: true
+```
 
 Using `from: 350` and `to: 10` may result in a long rotation in the
 opposite direction because the animation interpolates the numeric
