@@ -90,7 +90,7 @@ If `alternate` is false, then only the scale-up takes place in 200ms.
 - `blink_count` - Number of blinks at the home position before the icon starts moving
 - `blink_transition` - Duration of one blink cycle
 - `fade_out_transition` - Duration of the fade-out animation when stopping.
-- `transision` - Duration of one complete sweep animation
+- `sweep` - Duration of one complete icon sweep
 - `trail_length` - Length of the trail behind the icon (pixels)
 - `trail_width` - (Vertical) Width of trail (pixels)
 - `trail_color` - Color of trail
@@ -107,9 +107,14 @@ If `alternate` is false, then only the scale-up takes place in 200ms.
 | `type` | string | (none) | Effect type (`color`\|`icon`\|`jump`\|`rotate`\|`scale`) |
 | `aimation` | time string | 8s | Duration of the effect animation. |
 | `pause` | time string | 0 | Pausing time between each animation cycle. |
-| `alternate` | boolean | (none) | If `true`, the reverse animation
- follows. The above `animation` time includes both of forward and
- reverse animations. |
+| `alternate` | boolean | `false` | If `true`, its reverse animation
+| | | follows. The above `animation` time includes both of forward and
+| | | reverse animations (if any). |
+
+The default values of `from` and `to` parameters depend on animation
+type. In the `scale` animation, the default value of `from` is 100(\%)
+and `to` is 120(\%). In the `rorate` animation, the default value of
+`from` is 0(degree) and `to` is 360(degree).  
 
 ### `color`
 
