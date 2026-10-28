@@ -117,7 +117,7 @@ type.
 | jump | from | 0 | pixel |
 | | to | 10 | 
 | rotate | from | 0 | degree |
-| | to 360 | |
+| | to | 360 | |
 | scale | from | 0 | percent |
 | | to | 120 | |
 
