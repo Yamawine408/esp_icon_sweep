@@ -113,6 +113,7 @@ The default values of the `from` and `to` parameters depend on animation
 type.
 
 | animation type | parameter | default value | unit |
+| :------------: | :-------: | :-----------: | :--: |
 | jump | from | 0 | pixel |
 | | to | 10 | 
 | rotate | from | 0 | degree |
