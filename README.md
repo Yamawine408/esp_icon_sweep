@@ -116,7 +116,7 @@ type.
 | :------------: | :--: | :--: | :--: |
 | jump           | 0    | 10   | pixel |
 | rotate         | 0    | 360  | degree |
-| scale          | 0    | 120  | percent |
+| scale          | 100  | 120  | percent |
 
 ### `color`
 
