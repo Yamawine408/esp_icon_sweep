@@ -42,9 +42,11 @@ void EspIconSweep::set_jump_cb(void *object, int32_t value) {
   if (effect->alternate) {
     progress = cycle <= 500 ? cycle * 2 : (1000 - cycle) * 2;
   }
-  const int32_t jump_height = static_cast<int32_t>(
-      (static_cast<int64_t>(effect->height) * progress) / 1000);
-  lv_obj_set_y(self->widget_, self->home_y_ - jump_height);
+  // from/to are offsets relative to the icon's home Y position. Positive
+  // offsets move upward; alternate=true eases back to the starting offset.
+  const int32_t offset = effect->from + static_cast<int32_t>(
+      (static_cast<int64_t>(effect->to - effect->from) * progress) / 1000);
+  lv_obj_set_y(self->widget_, self->home_y_ - offset);
 }
 
 void EspIconSweep::set_icon_source_cb(void *object, int32_t value) {
@@ -111,7 +113,7 @@ void EspIconSweep::set_color_cb(void *object, int32_t value) {
 }
 
 void EspIconSweep::add_effect(uint8_t type, uint32_t animation_ms, uint32_t pause_ms,
-                              int32_t from, int32_t to, int32_t height, bool alternate, uint8_t bounces,
+                              int32_t from, int32_t to, bool alternate, uint8_t bounces,
                               uint8_t color_count, uint32_t color0, uint32_t color1,
                               uint32_t color2, uint32_t color3, uint32_t color4,
                               uint32_t color5, uint32_t color6, uint32_t color7) {
@@ -125,7 +127,6 @@ void EspIconSweep::add_effect(uint8_t type, uint32_t animation_ms, uint32_t paus
   effect.pause_ms = pause_ms;
   effect.from = from;
   effect.to = to;
-  effect.height = height;
   effect.bounces = bounces < 1 ? 1 : (bounces > 10 ? 10 : bounces);
   effect.alternate = alternate;
   effect.started = false;

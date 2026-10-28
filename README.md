@@ -109,19 +109,25 @@ If `alternate` is false, then only the scale-up takes place in 200ms.
 | `pause` | time string | 0 | Pausing time between each animation cycle. |
 | `alternate` | boolean | `false` | If `true`, its reverse animation follows. The above `animation` time includes both of forward and reverse animations (if any). |
 
-The default values of `from` and `to` parameters depend on animation
-type. In the `scale` animation, the default value of `from` is 100(\%)
-and `to` is 120(\%). In the `rorate` animation, the default value of
-`from` is 0(degree) and `to` is 360(degree).  
+The default values of the `from` and `to` parameters depend on animation
+type.
+
+| animation type | parameter | default value | unit |
+| jump | from | 0 | pixel |
+| | to | 10 | 
+| rotate | from | 0 | degree |
+| | to 360 | |
+| scale | from | 0 | percent |
+| | to | 120 | |
 
 ### `color`
 
-Change icon color at `every` position.
+Changing icon color in every second.
 
 ```yaml
     effects:
       - type: color
-        animation: 10s
+        animation: 3s
         colors:
           - color: 0xFF0000
           - color: 0x00FF00
@@ -143,12 +149,13 @@ Alternate icons.
 
 ### `jump`
 
-Jump icon 2 times at `every` position with the jump height of 5 pixels.
+Jump icon 2 times in 200ms with the jump height of 5 pixels, followed
+by 10 seconds pause.
 
 ```yaml
     effects:
       - type: jump
-        pause: 10
+        pause: 10s
         animation: 200ms
 	alternate: true
         height: 5

@@ -34,7 +34,6 @@ class EspIconSweep : public Component {
     uint32_t pause_ms{0};
     int32_t from{100};
     int32_t to{140};
-    int32_t height{24};
     uint8_t bounces{2};
     bool alternate{false};
     bool started{false};
@@ -50,7 +49,7 @@ class EspIconSweep : public Component {
     EspIconSweep *owner{nullptr};
   };
   void add_effect(uint8_t type, uint32_t animation_ms, uint32_t pause_ms,
-                  int32_t from, int32_t to, int32_t height, bool alternate, uint8_t bounces,
+                  int32_t from, int32_t to, bool alternate, uint8_t bounces,
                   uint8_t color_count, uint32_t color0, uint32_t color1,
                   uint32_t color2, uint32_t color3, uint32_t color4,
                   uint32_t color5, uint32_t color6, uint32_t color7);

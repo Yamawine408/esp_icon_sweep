@@ -35,11 +35,16 @@ def validate_effect(config):
     elif "bounces" in config:
         raise cv.Invalid("bounces can only be used with type: jump")
 
-    # Choose sensible defaults per effect instead of sharing scale's 100% default.
+    # Defaults are specific to each effect type.
     if "from" not in config:
         config["from"] = 100 if config["type"] == "scale" else 0
     if "to" not in config:
-        config["to"] = 360 if config["type"] == "rotate" else 140
+        if config["type"] == "rotate":
+            config["to"] = 360
+        elif config["type"] == "jump":
+            config["to"] = 10
+        else:
+            config["to"] = 140
 
     if config["type"] == "color":
         if "colors" not in config or len(config["colors"]) < 2:
@@ -64,7 +69,6 @@ EFFECT_SCHEMA = cv.All(
             cv.Optional("pause", default="0ms"): validate_pause,
             cv.Optional("from"): cv.int_range(min=-3000, max=3000),
             cv.Optional("to"): cv.int_range(min=-3000, max=3000),
-            cv.Optional("height", default=24): cv.int_range(min=-512, max=512),
             cv.Optional("bounces"): cv.int_range(min=1, max=10),
             cv.Optional("colors"): cv.All(cv.ensure_list(cv.hex_uint32_t), cv.Length(min=2, max=8)),
             cv.Optional(CONF_ICONS): cv.All(
@@ -140,7 +144,6 @@ async def to_code(config):
                 effect["pause"].total_milliseconds,
                 effect["from"],
                 effect["to"],
-                effect["height"],
                 effect["alternate"],
                 effect.get("bounces", 1),
                 len(effect.get("colors", [])),
