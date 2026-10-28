@@ -190,10 +190,10 @@ Specifying the rotation direction can be a little tricky. Let's call
 the change in rotation angle during each LVGL animation loop &Delta;.
 In the example above, `from` is -10 and `to` is 10. Since the `from`
 value is smaller than the `to` value, &Delta; is positive. For
-simplicity, let's assume &Delta; is 10. The rotation angle then
-changes from −0°  t0° and theo 10. If the values are swapped, 
-&Delta; becomes negative, and the angle changes from 10 to 0 and
-then to −1. °Therefore, setting `from: 0` and `to: 360` makes the
+simplicity, let's assume the absolute value of &Delta; is 10. The
+rotation angle then changes from -10 to 0  and then 10. If the values
+are swapped, &Delta; becomes negative, and the angle changes from 10
+to 0 and then to −1. °Therefore, setting `from: 0` and `to: 360` makes the
 icon rotate clockwise, while setting `from: 360` and `to: 0` makes it
 rotate counterclockwise. 
 
