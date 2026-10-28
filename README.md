@@ -112,14 +112,11 @@ If `alternate` is false, then only the scale-up takes place in 200ms.
 The default values of the `from` and `to` parameters depend on animation
 type.
 
-| animation type | parameter | default value | unit |
-| :------------: | :-------: | :-----------: | :--: |
-| jump | from | 0 | pixel |
-| | to | 10 | 
-| rotate | from | 0 | degree |
-| | to | 360 | |
-| scale | from | 0 | percent |
-| | to | 120 | |
+| animation type | from |  to  | unit |
+| :------------: | :--: | :--: | :--: |
+| jump           | 0    | 10   | pixel |
+| rotate         | 0    | 360  | degree |
+| scale          | 0    | 120  | percent |
 
 ### `color`
 
@@ -194,7 +191,7 @@ the change in rotation angle during each LVGL animation loop &Delta;.
 In the example above, `from` is -10 and `to` is 10. Since the `from`
 value is smaller than the `to` value, &Delta; is positive. For
 simplicity, let's assume &Delta; is 10. The rotation angle then
-changes from −1° to0° and theo 10. If the values are swapped, 
+changes from −0°  t0° and theo 10. If the values are swapped, 
 &Delta; becomes negative, and the angle changes from 10 to 0 and
 then to −1. °Therefore, setting `from: 0` and `to: 360` makes the
 icon rotate clockwise, while setting `from: 360` and `to: 0` makes it
