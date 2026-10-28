@@ -184,17 +184,21 @@ For example, to gently wobble an icon by 10° in either direction:
 ```yaml
 - type: rotate
   animation: 1s
-  from: -5
-  to: 5
+  from: -10
+  to: 10
   alternate: true
 ```
 
-Using `from: 350` and `to: 10` may result in a long rotation in the
-opposite direction because the animation interpolates the numeric
-angle values rather than automatically choosing the shortest path. 
-
-**Note:** The actual rotation direction depends on how the angles are
-interpolated by the implementation.
+Specifying the rotation direction can be a little tricky. Let's call
+the change in rotation angle during each LVGL animation loop &Delta;.
+In the example above, `from` is -10 and `to` is 10. Since the `from`
+value is smaller than the `to` value, &Delta; is positive. For
+simplicity, let's assume &Delta; is 10. The rotation angle then
+changes from −1° to0° and theo 10. If the values are swapped, 
+&Delta; becomes negative, and the angle changes from 10 to 0 and
+then to −1. °Therefore, setting `from: 0` and `to: 360` makes the
+icon rotate clockwise, while setting `from: 360` and `to: 0` makes it
+rotate counterclockwise. 
 
 ### `scale`
 
