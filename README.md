@@ -84,7 +84,7 @@ followed by 10s pause.
 If `alternate` is false, then only the scale-up takes place in 200ms.
 
 - `widget` - LVGL widget ID to animate
-- `start_x` —Horizontal starting position of the animation
+- `start_x` - Horizontal starting position of the animation
 - `animation_width` - Rightmost X-coordinate reached by the icon's left edge
 - `home_opacity` - Icon opacity at the home position, as a percentage (0–100)
 - `blink_count` - Number of blinks at the home position before the icon starts moving
