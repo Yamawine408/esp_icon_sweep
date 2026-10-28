@@ -155,7 +155,7 @@ by 10 seconds pause.
       - type: jump
         pause: 10s
         animation: 200ms
-	alternate: true
+        alternate: true
         height: 5
         bounces: 2
 ```
