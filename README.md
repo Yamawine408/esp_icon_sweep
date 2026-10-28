@@ -108,8 +108,8 @@ If `alternate` is false, then only the scale-up takes place in 200ms.
 | `aimation` | time string | 8s | Duration of the effect animation. |
 | `pause` | time string | 0 | Pausing time between each animation cycle. |
 | `alternate` | boolean | `false` | If `true`, its reverse animation
-| | | follows. The above `animation` time includes both of forward and
-| | | reverse animations (if any). |
+ follows. The above `animation` time includes both of forward and
+ reverse animations (if any). |
 
 The default values of `from` and `to` parameters depend on animation
 type. In the `scale` animation, the default value of `from` is 100(\%)
