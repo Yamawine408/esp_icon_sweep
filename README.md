@@ -193,7 +193,7 @@ value is smaller than the `to` value, &Delta; is positive. For
 simplicity, let's assume the absolute value of &Delta; is 10. The
 rotation angle then changes from -10 to 0 and then 10. If the values
 are swapped, &Delta; becomes negative, and the angle changes from 10
-to 0 and then to −0. °Therefore, setting `from: 0` and `to: 360` makes the
+to 0 and then to -10. TTherefore, setting `from: 0` and `to: 360` makes the
 icon rotate clockwise, while setting `from: 360` and `to: 0` makes it
 rotate counterclockwise. 
 
