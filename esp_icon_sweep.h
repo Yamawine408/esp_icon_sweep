@@ -15,7 +15,7 @@ namespace esp_icon_sweep {
 class EspIconSweep : public Component {
  public:
   void set_widget(lv_obj_t *widget) { widget_ = widget; }
-  void set_transition(uint32_t transition_ms) { transition_ms_ = transition_ms; }
+  void set_sweep(uint32_t sweep_ms) { sweep_ms_ = sweep_ms; }
   void set_animation_width(int32_t value) { animation_width_ = value; }
   void set_start_x(int32_t value) { start_x_ = value; }
   void set_blink_count(uint8_t value) { blink_count_ = value; }
@@ -30,15 +30,14 @@ class EspIconSweep : public Component {
   enum EffectType : uint8_t { EFFECT_SCALE, EFFECT_ROTATE, EFFECT_JUMP, EFFECT_COLOR, EFFECT_ICON };
   struct EffectConfig {
     EffectType type{EFFECT_SCALE};
-    uint8_t every_percent{10};
-    uint32_t transition_ms{500};
+    uint32_t animation_ms{500};
+    uint32_t pause_ms{0};
     int32_t from{100};
     int32_t to{140};
     int32_t height{24};
-    bool playback{true};
     uint8_t bounces{2};
-    uint8_t last_trigger_bucket{0};
-    bool continuous_started{false};
+    bool alternate{false};
+    bool started{false};
     uint8_t color_count{0};
     uint8_t color_index{0};
     uint8_t icon_count{0};
@@ -50,9 +49,9 @@ class EspIconSweep : public Component {
     uint32_t current_color{0xFFFFFF};
     EspIconSweep *owner{nullptr};
   };
-  void add_effect(uint8_t type, uint8_t every_percent, uint32_t transition_ms,
-                  int32_t from, int32_t to, int32_t height, bool playback,
-                  uint8_t bounces, uint8_t color_count, uint32_t color0, uint32_t color1,
+  void add_effect(uint8_t type, uint32_t animation_ms, uint32_t pause_ms,
+                  int32_t from, int32_t to, int32_t height, bool alternate, uint8_t bounces,
+                  uint8_t color_count, uint32_t color0, uint32_t color1,
                   uint32_t color2, uint32_t color3, uint32_t color4,
                   uint32_t color5, uint32_t color6, uint32_t color7);
   void add_icon(uint8_t effect_index, uint8_t icon_index, const void *icon);
@@ -83,13 +82,13 @@ class EspIconSweep : public Component {
   void set_trails_opa_(lv_opa_t opa);
   void reset_effects_();
   void cancel_animations_();
-  void check_effects_(int32_t widget_x);
+  void check_effects_();
+  void cancel_effect_animations_();
   static void set_scale_cb(void *object, int32_t value);
   static void set_angle_cb(void *object, int32_t value);
   static void set_color_cb(void *object, int32_t value);
   static void set_icon_source_cb(void *object, int32_t value);
   static void set_jump_cb(void *object, int32_t value);
-  static void effect_ready_cb(lv_anim_t *anim);
 
   lv_obj_t *widget_{nullptr};
   lv_obj_t *trails_[2]{nullptr, nullptr};
@@ -100,7 +99,7 @@ class EspIconSweep : public Component {
   int32_t offscreen_x_{-68};
   int32_t trail_length_{240};
   int32_t trail_width_{8};
-  uint32_t transition_ms_{8000};
+  uint32_t sweep_ms_{8000};
   uint32_t blink_transition_ms_{300};
   uint32_t fade_out_transition_ms_{1000};
   uint32_t fade_in_transition_ms_{500};

@@ -5,6 +5,7 @@ import esphome.config_validation as cv
 import esphome.components.image as image
 from esphome.components.lvgl.types import lv_obj_t_ptr
 from esphome.const import CONF_ID
+from esphome.core import TimePeriod
 
 DEPENDENCIES = ["lvgl"]
 
@@ -14,25 +15,35 @@ EspIconSweep = esp_icon_sweep_ns.class_(
 )
 
 CONF_WIDGET = "widget"
-CONF_TRANSITION = "transition"
+CONF_SWEEP = "sweep"
 CONF_ANIMATION_WIDTH = "animation_width"
 CONF_EFFECTS = "effects"
 CONF_ICONS = "icons"
 CONF_IMAGE = "image"
 
+def validate_pause(value):
+    # ESPHome's positive_time_period_milliseconds rejects zero, while pause=0ms
+    # is valid. Handle common zero-duration spellings explicitly.
+    if isinstance(value, str) and value.strip().lower() in ("0", "0ms", "0s", "0us", "0µs", "0min", "0h"):
+        return TimePeriod(milliseconds=0)
+    return cv.positive_time_period_milliseconds(value)
+
 def validate_effect(config):
+    # Jump can perform multiple hops during one animation cycle.
     if config["type"] == "jump":
         config.setdefault("bounces", 2)
-        if config["bounces"] > 1 and not config["playback"]:
-            raise cv.Invalid("bounces greater than 1 requires playback: true")
     elif "bounces" in config:
         raise cv.Invalid("bounces can only be used with type: jump")
+
+    # Choose sensible defaults per effect instead of sharing scale's 100% default.
+    if "from" not in config:
+        config["from"] = 100 if config["type"] == "scale" else 0
+    if "to" not in config:
+        config["to"] = 360 if config["type"] == "rotate" else 140
 
     if config["type"] == "color":
         if "colors" not in config or len(config["colors"]) < 2:
             raise cv.Invalid("type: color requires at least two colors")
-        if config["every"] == 0:
-            raise cv.Invalid("every: 0 is supported only for type: rotate or icon")
     elif "colors" in config:
         raise cv.Invalid("colors can only be used with type: color")
 
@@ -48,13 +59,13 @@ EFFECT_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.Required("type"): cv.one_of("scale", "rotate", "jump", "color", "icon", lower=True),
-            cv.Required("every"): cv.int_range(min=0, max=100),
-            cv.Optional("transition", default="500ms"): cv.positive_time_period_milliseconds,
-            cv.Optional("from", default=100): cv.int_range(min=-3000, max=3000),
-            cv.Optional("to", default=140): cv.int_range(min=-3000, max=3000),
+            cv.Optional("animation", default="500ms"): cv.positive_time_period_milliseconds,
+            cv.Optional("alternate", default=False): cv.boolean,
+            cv.Optional("pause", default="0ms"): validate_pause,
+            cv.Optional("from"): cv.int_range(min=-3000, max=3000),
+            cv.Optional("to"): cv.int_range(min=-3000, max=3000),
             cv.Optional("height", default=24): cv.int_range(min=-512, max=512),
             cv.Optional("bounces"): cv.int_range(min=1, max=10),
-            cv.Optional("playback", default=True): cv.boolean,
             cv.Optional("colors"): cv.All(cv.ensure_list(cv.hex_uint32_t), cv.Length(min=2, max=8)),
             cv.Optional(CONF_ICONS): cv.All(
                 cv.ensure_list(cv.Schema({cv.Required(CONF_IMAGE): cv.use_id(image.Image_)})),
@@ -69,7 +80,7 @@ ANIMATION_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(EspIconSweep),
         cv.Required(CONF_WIDGET): cv.use_id(lv_obj_t_ptr),
-        cv.Optional(CONF_TRANSITION, default="8s"): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_SWEEP, default="8s"): cv.positive_time_period_milliseconds,
         # Rightmost X coordinate reached by the icon's left edge.
         cv.Optional(CONF_ANIMATION_WIDTH, default=800): cv.int_range(min=1, max=4096),
         # Home position X; each cycle blinks here before moving with the trail.
@@ -98,7 +109,7 @@ async def to_code(config):
 
         widget = await cg.get_variable(item[CONF_WIDGET])
         cg.add(var.set_widget(widget))
-        cg.add(var.set_transition(item[CONF_TRANSITION].total_milliseconds))
+        cg.add(var.set_sweep(item[CONF_SWEEP].total_milliseconds))
         cg.add(var.set_animation_width(item[CONF_ANIMATION_WIDTH]))
         cg.add(var.set_start_x(item["start_x"]))
         cg.add(var.set_blink_count(item["blink_count"]))
@@ -125,13 +136,13 @@ async def to_code(config):
             colors = (colors + [0xFFFFFF] * 8)[:8]
             cg.add(var.add_effect(
                 effect_type,
-                effect["every"],
-                effect["transition"].total_milliseconds,
+                effect["animation"].total_milliseconds,
+                effect["pause"].total_milliseconds,
                 effect["from"],
                 effect["to"],
                 effect["height"],
-                effect["playback"],
-                effect.get("bounces", 2),
+                effect["alternate"],
+                effect.get("bounces", 1),
                 len(effect.get("colors", [])),
                 *colors,
             ))

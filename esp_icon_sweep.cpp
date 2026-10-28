@@ -11,7 +11,6 @@ void EspIconSweep::set_x_cb(void *object, int32_t value) {
   if (self == nullptr || self->widget_ == nullptr) return;
   lv_obj_set_x(self->widget_, value);
   self->update_trail_(value);
-  self->check_effects_(value);
 }
 
 void EspIconSweep::set_scale_cb(void *object, int32_t value) {
@@ -31,17 +30,40 @@ void EspIconSweep::set_angle_cb(void *object, int32_t value) {
 }
 
 void EspIconSweep::set_jump_cb(void *object, int32_t value) {
-  auto *self = static_cast<EspIconSweep *>(object);
-  if (self == nullptr || self->widget_ == nullptr) return;
-  // Jump only the icon. The trail stays on its normal horizontal path.
-  lv_obj_set_y(self->widget_, self->home_y_ - value);
+  auto *effect = static_cast<EffectConfig *>(object);
+  if (effect == nullptr || effect->owner == nullptr || effect->owner->widget_ == nullptr) return;
+  auto *self = effect->owner;
+
+  // The animation spans all configured bounces in one cycle. With alternate=true,
+  // each bounce moves up and down smoothly; otherwise it snaps back to the base
+  // position after reaching its peak. The trail remains on its normal path.
+  const int32_t cycle = value % 1000;
+  int32_t progress = cycle;
+  if (effect->alternate) {
+    progress = cycle <= 500 ? cycle * 2 : (1000 - cycle) * 2;
+  }
+  const int32_t jump_height = static_cast<int32_t>(
+      (static_cast<int64_t>(effect->height) * progress) / 1000);
+  lv_obj_set_y(self->widget_, self->home_y_ - jump_height);
 }
 
 void EspIconSweep::set_icon_source_cb(void *object, int32_t value) {
   auto *effect = static_cast<EffectConfig *>(object);
   if (effect == nullptr || effect->owner == nullptr || effect->owner->widget_ == nullptr || effect->icon_count == 0) return;
-  // The value equal to icon_count wraps neatly to the first image for endless cycling.
-  const uint8_t index = static_cast<uint8_t>(value < 0 ? 0 : value % effect->icon_count);
+
+  const int32_t steps = effect->alternate
+      ? 2 * (static_cast<int32_t>(effect->icon_count) - 1)
+      : static_cast<int32_t>(effect->icon_count);
+  if (steps <= 0) return;
+  int32_t step = value % steps;
+  if (step < 0) step += steps;
+  uint8_t index;
+  if (effect->alternate && step >= effect->icon_count) {
+    index = static_cast<uint8_t>(steps - step);
+  } else {
+    index = static_cast<uint8_t>(step);
+  }
+  if (index >= effect->icon_count) index = 0;
   effect->icon_index = index;
   const void *src = effect->icons[index];
   if (src != nullptr) lv_img_set_src(effect->owner->widget_, src);
@@ -49,33 +71,48 @@ void EspIconSweep::set_icon_source_cb(void *object, int32_t value) {
 
 void EspIconSweep::set_color_cb(void *object, int32_t value) {
   auto *effect = static_cast<EffectConfig *>(object);
-  if (effect == nullptr || effect->owner == nullptr || effect->owner->widget_ == nullptr) return;
+  if (effect == nullptr || effect->owner == nullptr || effect->owner->widget_ == nullptr || effect->color_count < 2) return;
+
+  const int32_t count = effect->color_count;
+  const int32_t steps = effect->alternate ? 2 * (count - 1) : count;
+  if (steps <= 0) return;
+  const int32_t max_value = steps * 1000;
   if (value < 0) value = 0;
-  if (value > 1000) value = 1000;
-  const uint32_t from = effect->color_from;
-  const uint32_t to = effect->color_to;
+  if (value > max_value) value = max_value;
+
+  int32_t step = value / 1000;
+  int32_t fraction = value % 1000;
+  if (step >= steps) {
+    step = 0;
+    fraction = 0;
+  }
+  auto palette_index = [count, effect](int32_t position) -> int32_t {
+    if (effect->alternate) {
+      const int32_t cycle = 2 * (count - 1);
+      position %= cycle;
+      return position < count ? position : cycle - position;
+    }
+    return position % count;
+  };
+  const int32_t from_index = palette_index(step);
+  const int32_t to_index = palette_index(step + 1);
+  const uint32_t from = effect->colors[from_index];
+  const uint32_t to = effect->colors[to_index];
   const int32_t r = static_cast<int32_t>((from >> 16) & 0xFF) +
-      (static_cast<int32_t>((to >> 16) & 0xFF) - static_cast<int32_t>((from >> 16) & 0xFF)) * value / 1000;
+      (static_cast<int32_t>((to >> 16) & 0xFF) - static_cast<int32_t>((from >> 16) & 0xFF)) * fraction / 1000;
   const int32_t g = static_cast<int32_t>((from >> 8) & 0xFF) +
-      (static_cast<int32_t>((to >> 8) & 0xFF) - static_cast<int32_t>((from >> 8) & 0xFF)) * value / 1000;
+      (static_cast<int32_t>((to >> 8) & 0xFF) - static_cast<int32_t>((from >> 8) & 0xFF)) * fraction / 1000;
   const int32_t b = static_cast<int32_t>(from & 0xFF) +
-      (static_cast<int32_t>(to & 0xFF) - static_cast<int32_t>(from & 0xFF)) * value / 1000;
+      (static_cast<int32_t>(to & 0xFF) - static_cast<int32_t>(from & 0xFF)) * fraction / 1000;
   effect->current_color = (static_cast<uint32_t>(r) << 16) |
       (static_cast<uint32_t>(g) << 8) | static_cast<uint32_t>(b);
   lv_obj_set_style_img_recolor(effect->owner->widget_, lv_color_hex(effect->current_color), LV_PART_MAIN);
   lv_obj_set_style_img_recolor_opa(effect->owner->widget_, LV_OPA_COVER, LV_PART_MAIN);
 }
 
-void EspIconSweep::effect_ready_cb(lv_anim_t *anim) {
-  auto *self = static_cast<EspIconSweep *>(anim->var);
-  if (self == nullptr) return;
-  // The main movement lifecycle resets all effects at the next cycle.
-}
-
-void EspIconSweep::add_effect(uint8_t type, uint8_t every_percent,
-                              uint32_t transition_ms, int32_t from,
-                              int32_t to, int32_t height, bool playback,
-                              uint8_t bounces, uint8_t color_count, uint32_t color0, uint32_t color1,
+void EspIconSweep::add_effect(uint8_t type, uint32_t animation_ms, uint32_t pause_ms,
+                              int32_t from, int32_t to, int32_t height, bool alternate, uint8_t bounces,
+                              uint8_t color_count, uint32_t color0, uint32_t color1,
                               uint32_t color2, uint32_t color3, uint32_t color4,
                               uint32_t color5, uint32_t color6, uint32_t color7) {
   if (effect_count_ >= MAX_EFFECTS) {
@@ -84,14 +121,14 @@ void EspIconSweep::add_effect(uint8_t type, uint8_t every_percent,
   }
   EffectConfig &effect = effects_[effect_count_++];
   effect.type = type <= EFFECT_ICON ? static_cast<EffectType>(type) : EFFECT_SCALE;
-  effect.every_percent = every_percent > 100 ? 100 : every_percent;
-  effect.transition_ms = transition_ms > 0 ? transition_ms : 1;
+  effect.animation_ms = animation_ms > 0 ? animation_ms : 1;
+  effect.pause_ms = pause_ms;
   effect.from = from;
   effect.to = to;
   effect.height = height;
-  effect.playback = playback;
   effect.bounces = bounces < 1 ? 1 : (bounces > 10 ? 10 : bounces);
-  effect.last_trigger_bucket = 0;
+  effect.alternate = alternate;
+  effect.started = false;
   effect.owner = this;
   const uint32_t configured_colors[8] = {color0, color1, color2, color3,
                                         color4, color5, color6, color7};
@@ -126,16 +163,15 @@ void EspIconSweep::cancel_animations_() {
 }
 
 void EspIconSweep::reset_effects_() {
-  // Effects use the component as LVGL's animation variable, so delete each
-  // effect callback explicitly without touching the lifecycle animations.
+  // Scale and rotation use the component as LVGL's animation variable.
+  // Jump, color and icon effects use their EffectConfig as the variable.
   lv_anim_delete(this, &EspIconSweep::set_scale_cb);
   lv_anim_delete(this, &EspIconSweep::set_angle_cb);
-  lv_anim_delete(this, &EspIconSweep::set_jump_cb);
   for (uint8_t i = 0; i < effect_count_; i++) {
+    lv_anim_delete(&effects_[i], &EspIconSweep::set_jump_cb);
     lv_anim_delete(&effects_[i], &EspIconSweep::set_color_cb);
     lv_anim_delete(&effects_[i], &EspIconSweep::set_icon_source_cb);
-    effects_[i].last_trigger_bucket = 0;
-    effects_[i].continuous_started = false;
+    effects_[i].started = false;
     effects_[i].color_index = 0;
     effects_[i].icon_index = 0;
     if (effects_[i].icon_count > 0 && effects_[i].icons[0] != nullptr && widget_ != nullptr) {
@@ -156,87 +192,89 @@ void EspIconSweep::reset_effects_() {
   }
 }
 
-void EspIconSweep::check_effects_(int32_t widget_x) {
+void EspIconSweep::cancel_effect_animations_() {
+  // Stop effect loops when the movement ends, preserving their current visual state
+  // during the fade-out. The final partial loop is intentionally interrupted.
+  lv_anim_delete(this, &EspIconSweep::set_scale_cb);
+  lv_anim_delete(this, &EspIconSweep::set_angle_cb);
+  for (uint8_t i = 0; i < effect_count_; i++) {
+    lv_anim_delete(&effects_[i], &EspIconSweep::set_jump_cb);
+    lv_anim_delete(&effects_[i], &EspIconSweep::set_color_cb);
+    lv_anim_delete(&effects_[i], &EspIconSweep::set_icon_source_cb);
+    effects_[i].started = false;
+  }
+}
+
+void EspIconSweep::check_effects_() {
   if (widget_ == nullptr || animation_width_ <= start_x_) return;
-  const int32_t span = animation_width_ - start_x_;
-  int32_t progress = ((widget_x - start_x_) * 100) / span;
-  if (progress < 0) progress = 0;
-  if (progress > 100) progress = 100;
+
   for (uint8_t i = 0; i < effect_count_; i++) {
     EffectConfig &effect = effects_[i];
-    const bool continuous_rotate = effect.every_percent == 0 && effect.type == EFFECT_ROTATE;
-    const bool continuous_icon = effect.every_percent == 0 && effect.type == EFFECT_ICON;
-    if (effect.every_percent == 0 && !continuous_rotate && !continuous_icon) continue;
-    if (continuous_rotate || continuous_icon) {
-      if (effect.continuous_started) continue;
-      effect.continuous_started = true;
-    } else {
-      const uint8_t bucket = static_cast<uint8_t>(progress / effect.every_percent);
-      if (bucket == 0 || bucket <= effect.last_trigger_bucket) continue;
-      effect.last_trigger_bucket = bucket;
-    }
+    if (effect.started) continue;
+    effect.started = true;
 
     lv_anim_t anim;
     lv_anim_init(&anim);
     lv_anim_set_var(&anim, this);
-    lv_anim_set_time(&anim, continuous_icon ? effect.transition_ms * effect.icon_count : effect.transition_ms);
-    lv_anim_set_path_cb(&anim, (continuous_rotate || continuous_icon) ? lv_anim_path_linear : lv_anim_path_ease_in_out);
-    lv_anim_set_ready_cb(&anim, (continuous_rotate || continuous_icon) ? nullptr : &EspIconSweep::effect_ready_cb);
+    lv_anim_set_repeat_count(&anim, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_set_repeat_delay(&anim, effect.pause_ms);
+    lv_anim_set_ready_cb(&anim, nullptr);
 
     switch (effect.type) {
       case EFFECT_SCALE:
         lv_anim_set_exec_cb(&anim, &EspIconSweep::set_scale_cb);
         lv_anim_set_values(&anim, effect.from * 256 / 100, effect.to * 256 / 100);
-        if (effect.playback) lv_anim_set_playback_time(&anim, effect.transition_ms);
+        if (effect.alternate) {
+          const uint32_t forward = effect.animation_ms / 2U > 0 ? effect.animation_ms / 2U : 1U;
+          const uint32_t reverse = effect.animation_ms > forward ? effect.animation_ms - forward : 1U;
+          lv_anim_set_time(&anim, forward);
+          lv_anim_set_playback_time(&anim, reverse);
+        } else {
+          lv_anim_set_time(&anim, effect.animation_ms);
+        }
         break;
       case EFFECT_ROTATE:
         lv_anim_set_exec_cb(&anim, &EspIconSweep::set_angle_cb);
         lv_anim_set_values(&anim, effect.from * 10, effect.to * 10);
-        if (continuous_rotate) {
-          // A zero interval means one endlessly repeating rotation animation.
-          // Keep it linear so a full-turn (e.g. 0 -> 360) looks continuous.
-          lv_anim_set_repeat_count(&anim, LV_ANIM_REPEAT_INFINITE);
-        } else if (effect.playback) {
-          lv_anim_set_playback_time(&anim, effect.transition_ms);
+        if (effect.alternate) {
+          const uint32_t forward = effect.animation_ms / 2U > 0 ? effect.animation_ms / 2U : 1U;
+          const uint32_t reverse = effect.animation_ms > forward ? effect.animation_ms - forward : 1U;
+          lv_anim_set_time(&anim, forward);
+          lv_anim_set_playback_time(&anim, reverse);
+        } else {
+          lv_anim_set_time(&anim, effect.animation_ms);
         }
         break;
       case EFFECT_JUMP:
+        // One animation cycle contains all bounces; pause applies after the full cycle.
+        lv_anim_set_var(&anim, &effect);
         lv_anim_set_exec_cb(&anim, &EspIconSweep::set_jump_cb);
-        lv_anim_set_values(&anim, 0, effect.height);
-        if (effect.playback) {
-          lv_anim_set_playback_time(&anim, effect.transition_ms);
-          // One bounce is the up-and-down playback; additional bounces repeat it.
-          lv_anim_set_repeat_count(&anim, static_cast<uint16_t>(effect.bounces));
-        }
+        lv_anim_set_values(&anim, 0, static_cast<int32_t>(effect.bounces) * 1000);
+        lv_anim_set_time(&anim, effect.animation_ms);
+        lv_anim_set_path_cb(&anim, lv_anim_path_linear);
         break;
       case EFFECT_COLOR: {
         if (effect.color_count < 2) continue;
-        // Retarget from the currently displayed color so short intervals remain smooth.
-        lv_anim_delete(&effect, &EspIconSweep::set_color_cb);
-        lv_anim_set_ready_cb(&anim, nullptr);
-        effect.color_from = effect.current_color;
-        effect.color_index = static_cast<uint8_t>((effect.color_index + 1) % effect.color_count);
-        effect.color_to = effect.colors[effect.color_index];
         lv_anim_set_var(&anim, &effect);
         lv_anim_set_exec_cb(&anim, &EspIconSweep::set_color_cb);
-        lv_anim_set_values(&anim, 0, 1000);
+        const int32_t steps = effect.alternate
+            ? 2 * (static_cast<int32_t>(effect.color_count) - 1)
+            : static_cast<int32_t>(effect.color_count);
+        lv_anim_set_values(&anim, 0, steps * 1000);
+        lv_anim_set_time(&anim, effect.animation_ms);
+        lv_anim_set_path_cb(&anim, lv_anim_path_linear);
         break;
       }
       case EFFECT_ICON: {
         if (effect.icon_count < 2) continue;
-        if (continuous_icon) {
-          // transition is the interval per image; cycle through all icons forever.
-          lv_anim_set_var(&anim, &effect);
-          lv_anim_set_exec_cb(&anim, &EspIconSweep::set_icon_source_cb);
-          lv_anim_set_values(&anim, 0, effect.icon_count);
-          lv_anim_set_repeat_count(&anim, LV_ANIM_REPEAT_INFINITE);
-          lv_anim_set_time(&anim, (effect.transition_ms > 0 ? effect.transition_ms : 1) * effect.icon_count);
-        } else {
-          effect.icon_index = static_cast<uint8_t>((effect.icon_index + 1) % effect.icon_count);
-          const void *src = effect.icons[effect.icon_index];
-          if (src != nullptr) lv_img_set_src(widget_, src);
-          continue;
-        }
+        lv_anim_set_var(&anim, &effect);
+        lv_anim_set_exec_cb(&anim, &EspIconSweep::set_icon_source_cb);
+        const int32_t steps = effect.alternate
+            ? 2 * (static_cast<int32_t>(effect.icon_count) - 1)
+            : static_cast<int32_t>(effect.icon_count);
+        lv_anim_set_values(&anim, 0, steps);
+        lv_anim_set_time(&anim, effect.animation_ms);
+        lv_anim_set_path_cb(&anim, lv_anim_path_linear);
         break;
       }
     }
@@ -352,13 +390,14 @@ void EspIconSweep::start_move_() {
   update_trail_(from_x);
   set_trails_opa_(LV_OPA_COVER);
   lv_obj_set_style_opa(widget_, LV_OPA_COVER, LV_PART_MAIN);
+  check_effects_();
 
   lv_anim_t anim;
   lv_anim_init(&anim);
   lv_anim_set_var(&anim, this);
   lv_anim_set_exec_cb(&anim, &EspIconSweep::set_x_cb);
   lv_anim_set_values(&anim, from_x, animation_width_);
-  lv_anim_set_time(&anim, transition_ms_ > 0 ? transition_ms_ : 1);
+  lv_anim_set_time(&anim, sweep_ms_ > 0 ? sweep_ms_ : 1);
   lv_anim_set_path_cb(&anim, lv_anim_path_linear);
   lv_anim_set_ready_cb(&anim, &EspIconSweep::move_ready_cb);
   lv_anim_start(&anim);
@@ -391,6 +430,9 @@ void EspIconSweep::start_fade_out_() {
     }
     return;
   }
+
+  // Stop effect loops at movement end; the final partial loop is interrupted.
+  cancel_effect_animations_();
 
   // Normal cycle: icon and trail are both fully visible before this fade.
   lv_anim_t anim;
@@ -506,9 +548,9 @@ void EspIconSweep::setup() {
 
   reset_effects_();
   setup_complete_ = true;
-  ESP_LOGI(TAG, "Icon Sweep configured: start_x=%ld width=%ld transition=%u ms blink=%u x %u ms home_opacity=%u%% effects=%u",
+  ESP_LOGI(TAG, "Icon Sweep configured: start_x=%ld width=%ld sweep=%u ms blink=%u x %u ms home_opacity=%u%% effects=%u",
            static_cast<long>(start_x_), static_cast<long>(animation_width_),
-           static_cast<unsigned>(transition_ms_), static_cast<unsigned>(blink_count_),
+           static_cast<unsigned>(sweep_ms_), static_cast<unsigned>(blink_count_),
            static_cast<unsigned>(blink_transition_ms_), static_cast<unsigned>(home_opacity_),
            static_cast<unsigned>(effect_count_));
 }
@@ -517,7 +559,7 @@ void EspIconSweep::dump_config() {
   ESP_LOGCONFIG(TAG, "Icon Sweep:");
   ESP_LOGCONFIG(TAG, "  Start/home X: %ld", static_cast<long>(start_x_));
   ESP_LOGCONFIG(TAG, "  Animation width: %ld", static_cast<long>(animation_width_));
-  ESP_LOGCONFIG(TAG, "  Transition: %u ms", static_cast<unsigned>(transition_ms_));
+  ESP_LOGCONFIG(TAG, "  Sweep: %u ms", static_cast<unsigned>(sweep_ms_));
   ESP_LOGCONFIG(TAG, "  Blink: %u cycles, %u ms each", static_cast<unsigned>(blink_count_),
                 static_cast<unsigned>(blink_transition_ms_));
   ESP_LOGCONFIG(TAG, "  Fade out/in: %u/%u ms", static_cast<unsigned>(fade_out_transition_ms_),

@@ -37,8 +37,6 @@ external_components:
     components: [esp_icon_sweep]
 ```
 
-> **Note:** The configuration above assumes the component source files are located at the root of the `esp_icon_sweep` repository. Adjust the source configuration if the repository layout changes.
-
 ## Configuration
 
 ESP Icon Sweep is configured through ESPHome YAML.
@@ -67,22 +65,23 @@ requiring the trail to reproduce every movement of the icon.
     blink_transition: 300ms
     fade_out_transition: 1s
     
-    transition: 30s
+    sweep: 30s
     trail_length: 150
     trail_width: 2
     trail_color: 0xFFFFFF
     effects:
       - type: scale
-        every: 10
-        transition: 100ms
+        animation: 200ms
+        pause: 10
+        alternate: true
         from: 100 
         to: 120
-        playback: true
 ```
 
-In this example, the icon jumps when it reaches the positions
-specified by the `every` number which is the percentage of the `animation_width`.
-The animation settings are intended to let you customize properties such as:
+In this example, repeating the animation consisting of scaling up from
+100\% to 120\% and scaling donw from 120\% to 100\% in 200ms,
+followed by 10s pause.
+If `alternate` is false, then only the scale-up takes place in 200ms.
 
 - `widget` - LVGL widget ID to animate
 - `start_x` —Horizontal starting position of the animation
@@ -94,23 +93,23 @@ The animation settings are intended to let you customize properties such as:
 - `transision` - Duration of one complete sweep animation
 - `trail_length` - Length of the trail behind the icon (pixels)
 - `trail_width` - (Vertical) Width of trail (pixels)
+- `trail_color` - Color of trail
 - `effects` - List of animation effects to apply while the icon moves
 
-![ESP Icon Sweep animation](figs/esp-icon-sweep.png)
+![ESP Icon Sweep animation](figs/params.png)
 
 ## Effects
-
-Multiple effects can be combined, but only one `icon` effect and one
-`color` effect are allowed. 
 
 ### Common parameters
 
 | Name | Type | Default | Description |
 | ---- | :--: | :-----: | ----------- |
 | `type` | string | (none) | Effect type (`color`\|`icon`\|`jump`\|`rotate`\|`scale`) |
-| `transition` | string | 8s | Duration of the effect animation. |
-| `every` | integer | (none) | Position along the animation path, expressed as a percentage (0–100). Use 0 for continuous rotation or continuous icon cycling. |
-| `playback` | boolean | (none) | Whether the effect reverses after reaching its target value. |
+| `aimation` | time string | 8s | Duration of the effect animation. |
+| `pause` | time string | 0 | Pausing time between each animation cycle. |
+| `alternate` | boolean | (none) | If `true`, the reverse animation
+ follows. The above `animation` time includes both of forward and
+ reverse animations. |
 
 ### `color`
 
@@ -119,7 +118,7 @@ Change icon color at `every` position.
 ```yaml
     effects:
       - type: color
-        every: 10
+        animation: 10s
         colors:
           - color: 0xFF0000
           - color: 0x00FF00
@@ -133,7 +132,7 @@ Alternate icons.
 ```yaml
     effects:
       - type: icon
-        every: 10
+        animation: 10s
         icons:
           - image: icon1
           - image: icon2
@@ -146,14 +145,14 @@ Jump icon 2 times at `every` position with the jump height of 5 pixels.
 ```yaml
     effects:
       - type: jump
-        every: 10
-        transition: 200ms
+        pause: 10
+        animation: 200ms
+	alternate: true
         height: 5
         bounces: 2
-        playback: true
 ```
 
-### `rotation`
+### `rotate`
 
 Rotating the icon without stopping the rotation. Its rotation speed is
 1 round per second in this example.
@@ -161,12 +160,28 @@ Rotating the icon without stopping the rotation. Its rotation speed is
 ```yaml
     effects:
       - type: rotate
-        every: 0
-        transition: 1s
-        playback: true
+        animation: 1s
         from: 0
         to: 360
 ```
+
+For vibration (small back-and-forth rotations), use angles around the
+desired resting position rather than crossing the 0°/360° boundary. 
+
+For example, to gently wobble an icon by 10° in either direction:
+
+- type: rotate
+  animation: 1s
+  from: -5
+  to: 5
+  alternate: true
+
+Using `from: 350` and `to: 10` may result in a long rotation in the
+opposite direction because the animation interpolates the numeric
+angle values rather than automatically choosing the shortest path. 
+
+**Note:** The actual rotation direction depends on how the angles are
+interpolated by the implementation.
 
 ### `scale`
 
@@ -177,12 +192,18 @@ then returns to its original size because playback is set to true.
 ```yaml
     effects:
       - type: scale
-        every: 10
-        transition: 3s
-        from: 90
-        to: 180
+        pause: 10s
+        animation: 3s
+        from: 100
+        to: 120
         playback: true
 ```
+
+### Effect Combinations
+
+Multiple effects may be combined, but some combinations will not behave
+as expected. In particular, effects that modify the same property may
+interfere with each other. Use such combinations with care.
 
 ## License
 
