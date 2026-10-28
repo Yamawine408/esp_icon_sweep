@@ -2,9 +2,13 @@
 
 **A configurable icon animation component for ESPHome and LVGL.**
 
-ESP Icon Sweep adds animated icon effects to ESPHome-based displays using LVGL. Icons move horizontally across the screen, with optional visual effects such as trails, blinking, scaling, jumping, and rotation.
+ESP Icon Sweep adds animated icon effects to ESPHome-based displays
+using LVGL. Icons move horizontally across the screen, with optional
+visual effects such as trails, blinking, scaling, jumping, and
+rotation.  
 
-It is designed as an independent component that can be used alongside ESPHome dashboards and other custom components.
+It is designed as an independent component that can be used alongside
+ESPHome dashboards and other custom components. 
 
 ## Features
 
@@ -23,7 +27,9 @@ It is designed as an independent component that can be used alongside ESPHome da
 - LVGL
 - PNG icons or other image assets supported by the configured LVGL image widgets
 
-This component was developed and tested on an ESP32-P4 board with an 800 × 1280 MIPI-DSI display and LVGL 9.5.0. Other configurations may require additional testing.
+This component was developed and tested on an ESP32-P4 board with an
+800 × 1280 MIPI-DSI display and LVGL 9.5.0. Other configurations may
+require additional testing. 
 
 ## Installation
 
@@ -81,22 +87,24 @@ requiring the trail to reproduce every movement of the icon.
 In this example, repeating the animation consisting of scaling up from
 100\% to 120\% and scaling donw from 120\% to 100\% in 200ms,
 followed by 10s pause.
-If `alternate` is false, then only the scale-up takes place in 200ms.
-
-- `widget` - LVGL widget ID to animate
-- `start_x` - Horizontal starting position of the animation
-- `animation_width` - Rightmost X-coordinate reached by the icon's left edge
-- `home_opacity` - Icon opacity at the home position, as a percentage (0–100)
-- `blink_count` - Number of blinks at the home position before the icon starts moving
-- `blink_transition` - Duration of one blink cycle
-- `fade_out_transition` - Duration of the fade-out animation when stopping.
-- `sweep` - Duration of one complete icon sweep
-- `trail_length` - Length of the trail behind the icon (pixels)
-- `trail_width` - (Vertical) Width of trail (pixels)
-- `trail_color` - Color of trail
-- `effects` - List of animation effects to apply while the icon moves
+If `alternate` is set to `false`, then only the scale-up takes place in 200ms.
 
 ![ESP Icon Sweep animation](figs/params.png)
+
+| Name | Type | Default | Description |
+| :--: | :--: | :-----: | ----------- |
+| `widget` | Widget ID | -- | LVGL widget ID to animate |
+| `start_x` | integer | 0 | Horizontal starting position of the animation |
+| 'animation_width` | integer | 800 | Rightmost X-coordinate reached by the icon's left edge |
+| `home_opacity` | integer | 25 | Icon opacity at the home position, as a percentage (0–100) |
+| `blink_count` | positive integer | 3 | Number of blinks at the home position before the icon starts moving |
+| `blink_transition` | time string | 300ms | Duration of one blink cycle |
+| `fade_out_transition` | time string | 500ms | Duration of the fade-out animation when stopping |
+| `sweep` | time string | 8s | Duration of one complete icon sweep |
+| `trail_length` | positive integer | 240 | Length of the trail behind the icon (pixels) |
+| `trail_width` | positive integer | 8 | (Vertical) Width (or thichness) of trail (pixels) |
+| `trail_color` | LVGL color value | 0xFFFFFF | Color of trail |
+| `effects` | - | - | List of animation effects to apply while the icon moves |
 
 ## Effects
 
@@ -201,7 +209,7 @@ rotate counterclockwise.
 
 In this example, the icon scales from 100% to 120% of its original
 size when it reaches 10% of the animation path. The scaling animation
-then returns to its original size because playback is set to true. 
+then returns to its original size because playback is set to `true`. 
 
 ```yaml
     effects:
