@@ -94,15 +94,15 @@ If `alternate` is set to `false`, then only the scale-up takes place in 200ms.
 | Name | Type | Default | Description |
 | :--: | :--: | :-----: | ----------- |
 | `widget` | Widget ID | -- | LVGL widget ID to animate |
-| `start_x` | integer | 0 | Horizontal starting position of the animation |
-| 'animation_width` | integer | 800 | Rightmost X-coordinate reached by the icon's left edge |
+| `start_x` | integer | 0 | Horizontal starting position of the animation (pixels) |
+| 'animation_width` | integer | 800 | Rightmost X-coordinate reached by the icon's left edge (pixels) |
 | `home_opacity` | integer | 25 | Icon opacity at the home position, as a percentage (0–100) |
 | `blink_count` | positive integer | 3 | Number of blinks at the home position before the icon starts moving |
 | `blink_transition` | time string | 300ms | Duration of one blink cycle |
 | `fade_out_transition` | time string | 500ms | Duration of the fade-out animation when stopping |
 | `sweep` | time string | 8s | Duration of one complete icon sweep |
 | `trail_length` | positive integer | 240 | Length of the trail behind the icon (pixels) |
-| `trail_width` | positive integer | 8 | (Vertical) Width (or thichness) of trail (pixels) |
+| `trail_width` | positive integer | 8 | Thickness of trail (pixels) |
 | `trail_color` | LVGL color value | 0xFFFFFF | Color of trail |
 | `effects` | - | - | List of animation effects to apply while the icon moves |
 
@@ -182,9 +182,8 @@ Rotating the icon without stopping the rotation. Its rotation speed is
 ```
 
 For vibration (small back-and-forth rotations), use angles around the
-desired resting position rather than crossing the 0°/360° boundary. 
-
-For example, to gently wobble an icon by 10° in either direction:
+desired resting position rather than crossing the 0/360 degree boundary. 
+For example, to gently wobble an icon by 10 degrees in either direction:
 
 ```yaml
 - type: rotate
@@ -208,8 +207,7 @@ rotate counterclockwise.
 ### `scale`
 
 In this example, the icon scales from 100% to 120% of its original
-size when it reaches 10% of the animation path. The scaling animation
-then returns to its original size because playback is set to `true`. 
+size. 
 
 ```yaml
     effects:
@@ -218,7 +216,6 @@ then returns to its original size because playback is set to `true`.
         animation: 3s
         from: 100
         to: 120
-        playback: true
 ```
 
 ### Effect Combinations
@@ -233,8 +230,8 @@ Here is the sample YAML code to start and stop animatiom.
 
 ```yaml
 platform: homeassistant
-id: boolean_sensor
-entity_id: input_boolean.boolean_sensor
+id: icon_sweep_trigger
+entity_id: input_boolean.show_alert
 internal: true
 trigger_on_initial_state: true
 
@@ -242,11 +239,11 @@ on_state:
   then:
     - if:
         condition:
-          binary_sensor.is_on: boolean_sensor
+          binary_sensor.is_on: icon_sweep_trigger
         then:
-          - lambda: id(widget_id).start();
+          - lambda: id(icon_sweep_widget_id).start();
         else:
-          - lambda: id(widget_id).stop();
+          - lambda: id(icon_sweep_widget_id).stop();
 ```
 
 ## License
