@@ -464,7 +464,12 @@ void EspIconSweep::start() {
     return;
   }
 
-  // START always wins: cancel movement, effects, and any in-progress stop fade.
+  // Ignore START while already running (including a pending STOP fade).
+  if (running_) {
+    ESP_LOGD(TAG, "START ignored: Icon Sweep is already running");
+    return;
+  }
+
   cancel_animations_();
   stop_requested_ = false;
   running_ = true;
